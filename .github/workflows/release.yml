@@ -1,4 +1,4 @@
-name: Manual Build Deb
+name: Build and Release .deb
 
 on:
   workflow_dispatch:
@@ -8,28 +8,30 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: Install dpkg
-        run: brew install dpkg
+      - name: Install dependencies
+        run: |
+          brew install dpkg ldid make clang
+          git clone https://github.com/theos/theos.git $HOME/theos
+          git -C $HOME/theos submodule update --init --recursive
 
-      - name: Make build script executable
-        run: chmod +x build.sh
+      - name: Set THEOS environment variable
+        run: echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
-      - name: Build .deb package
-        run: ./build.sh
+      - name: Build Tweak and Prefs Bundle
+        run: |
+          make clean package FINALPACKAGE=1
 
-      - name: Upload artifact
+      - name: Find .deb files
+        id: find_debs
+        run: |
+          mkdir -p output
+          find . -name "*.deb" -exec cp {} output/ \;
+
+      - name: Upload .deb files
         uses: actions/upload-artifact@v3
         with:
-          name: FDFullscreenPopGesture.deb
-          path: FDFullscreenPopGesture.deb
-
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v1
-        if: github.event_name == 'workflow_dispatch'
-        with:
-          files: FDFullscreenPopGesture.deb
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          name: ArtworkSpinner-debs
+          path: output
