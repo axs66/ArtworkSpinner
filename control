@@ -1,0 +1,9 @@
+Package: com.82flex.artworkspinner
+Name: ArtworkSpinner
+Version: 1.0
+Architecture: iphoneos-arm
+Description: Rotate the album artwork!
+Maintainer: Lessica
+Author: Lessica
+Section: Tweaks
+Depends: firmware (>= 14.0), mobilesubstrate
